@@ -1,17 +1,51 @@
-import Vue from 'vue'
-import Vuex from 'vuex'
+import Vue from "vue";
+import Vuex from "vuex";
 
-Vue.use(Vuex)
+Vue.use(Vuex);
 
 export default new Vuex.Store({
   state: {
+    costAuto: 3300000,
+    initialPaymentPercent: 13,
+    initialPaymentValue: 420000,
+    leasingPeriod: 60,
   },
   getters: {
+    monthlyPayment(state) {
+      const monthPay =
+        (state.costAuto - state.initialPaymentValue) *
+        ((0.035 * Math.pow(1 + 0.035, state.leasingPeriod)) /
+          (Math.pow(1 + 0.035, state.leasingPeriod) - 1));
+      return Math.round(monthPay);
+    },
+    contractSum(state, getters) {
+      console.log(typeof getters.monthlyPayment);
+      return (
+        state.initialPaymentValue + state.leasingPeriod * getters.monthlyPayment
+      );
+    },
   },
   mutations: {
+    setCostAuto(state, payload) {
+      state.costAuto = payload;
+      state.initialPaymentValue = Math.round(
+        (payload * state.initialPaymentPercent) / 100
+      );
+    },
+    setInitialPaymentPercent(state, payload) {
+      state.initialPaymentPercent = payload;
+      state.initialPaymentValue = Math.round((state.costAuto * payload) / 100);
+    },
+    setInitialPaymentValue(state, payload) {
+      state.initialPaymentValue = payload;
+      state.initialPaymentPercent = Math.round(
+        (payload * 100) / state.costAuto
+      );
+    },
+    setLeasingPeriod(state, payload) {
+      state.leasingPeriod = payload;
+    },
   },
-  actions: {
-  },
-  modules: {
-  }
-})
+  actions: {},
+  modules: {},
+});
