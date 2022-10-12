@@ -1,5 +1,6 @@
 import Vue from "vue";
 import Vuex from "vuex";
+import axios from "axios";
 
 Vue.use(Vuex);
 
@@ -9,6 +10,7 @@ export default new Vuex.Store({
     initialPaymentPercent: 13,
     initialPaymentValue: 420000,
     leasingPeriod: 60,
+    inputDisabled: false,
   },
   getters: {
     monthlyPayment(state) {
@@ -19,10 +21,15 @@ export default new Vuex.Store({
       return Math.round(monthPay);
     },
     contractSum(state, getters) {
-      console.log(typeof getters.monthlyPayment);
       return (
         state.initialPaymentValue + state.leasingPeriod * getters.monthlyPayment
       );
+    },
+    minInitialPayment(state) {
+      return Math.round(state.costAuto * 0.1);
+    },
+    maxInitialPayment(state) {
+      return Math.round(state.costAuto * 0.6);
     },
   },
   mutations: {
@@ -37,6 +44,9 @@ export default new Vuex.Store({
       state.initialPaymentValue = Math.round((state.costAuto * payload) / 100);
     },
     setInitialPaymentValue(state, payload) {
+      if (typeof payload === "string") {
+        payload = Number.parseInt(payload);
+      }
       state.initialPaymentValue = payload;
       state.initialPaymentPercent = Math.round(
         (payload * 100) / state.costAuto
@@ -45,7 +55,30 @@ export default new Vuex.Store({
     setLeasingPeriod(state, payload) {
       state.leasingPeriod = payload;
     },
+    setInputDisabled(state, payload) {
+      state.inputDisabled = payload;
+    },
   },
-  actions: {},
+  actions: {
+    async sendRequest({ state, commit, getters }, payload) {
+      commit("setInputDisabled", true);
+      const link = "https://hookb.in/eK160jgYJ6UlaRPldJ1P";
+      try {
+        const resp = await axios.post(link, {
+          car_coast: state.costAuto,
+          initail_payment: state.initialPaymentValue,
+          initail_payment_percent: state.initialPaymentPercent,
+          lease_term: state.leasingPeriod,
+          total_sum: getters.contractSum,
+          monthly_payment_from: getters.monthlyPayment,
+        });
+      } catch (e) {
+        console.log("Error ", e);
+      }
+      setTimeout(() => {
+        commit("setInputDisabled", false);
+      }, 3000);
+    },
+  },
   modules: {},
 });
