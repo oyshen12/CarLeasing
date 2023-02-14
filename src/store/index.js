@@ -44,9 +44,6 @@ export default new Vuex.Store({
       state.initialPaymentValue = Math.round((state.costAuto * payload) / 100);
     },
     setInitialPaymentValue(state, payload) {
-      if (typeof payload === "string") {
-        payload = Number.parseInt(payload);
-      }
       state.initialPaymentValue = payload;
       state.initialPaymentPercent = Math.round(
         (payload * 100) / state.costAuto

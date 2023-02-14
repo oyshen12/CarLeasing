@@ -16,7 +16,6 @@
         type="number"
         ref="inputEl"
         @keypress="filterWithoutE"
-        :key="inputController"
         :disabled="disabled"
       />
       <slot></slot>
@@ -53,27 +52,21 @@ export default {
   data() {
     return {
       focused: false,
-      inputController: 0,
     };
   },
   methods: {
     inputNumberChange(val) {
       const { value } = val.target;
-      let valueInt = Number.parseInt(value);
-      let changed = false;
-      if (valueInt > this.maxNumber) {
-        valueInt = this.maxNumber;
-        changed = true;
+      const valueInt = Number.parseInt(value);
+
+      if (value.length > 10 || value === "") {
+        this.$refs.inputEl.value = value.slice(0, 10);
       } else if (valueInt < this.minNumber) {
-        valueInt = this.minNumber;
-        changed = true;
-      }
-      this.$emit("changeInputNumber", valueInt);
-      if (changed) {
-        this.inputController++;
-        this.$nextTick(() => {
-          this.$refs.inputEl.focus();
-        });
+        this.$refs.inputEl.value = value;
+      } else if (valueInt > this.maxNumber) {
+        this.$refs.inputEl.value = value;
+      } else {
+        this.$emit("changeInputNumber", valueInt);
       }
     },
     inputRangeChange(val) {
